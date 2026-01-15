@@ -1,79 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Vivash Singh</title>
-<link rel="stylesheet" href="css/style.css">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Vivash Singh — Multidisciplinary designer crafting brand, motion, 3D, and digital experiences with clarity and restraint.">
-<meta property="og:title" content="Vivash Singh — Creative Portfolio">
-<meta property="og:description" content="Minimal, premium portfolio showcasing branding, 3D, marketing, photography, and web design.">
-<meta property="og:type" content="website">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vivash Singh — Creative Portfolio</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="description" content="Multidisciplinary designer crafting brand, motion, 3D, and digital experiences with clarity and restraint.">
 </head>
 <body>
-<!-- Add this for debugging -->
-<div style="position:fixed; top:10px; right:10px; background:red; color:white; padding:10px; z-index:9999; display:none;" id="debug">Debug</div>
+    <nav>
+        <strong>Vivash Singh</strong>
+        <div>
+            <a href="index.html">Home</a>
+            <a href="logos.html">Logos</a>
+            <a href="social.html">Social</a>
+            <a href="3d.html">3D & Packaging</a>
+            <a href="marketing.html">Marketing</a>
+            <a href="photography.html">Photography</a>
+            <a href="web.html">Web Design</a>
+        </div>
+    </nav>
 
-<script>
-  // Simple debug check
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded');
-    const debug = document.getElementById('debug');
-    debug.style.display = 'block';
-    debug.textContent = 'CSS: ' + (document.styleSheets.length > 0 ? 'Loaded' : 'Missing');
-    
-    // Check if scripts will load
-    setTimeout(() => {
-      debug.textContent += ' | Scripts checking...';
-    }, 500);
-  });
-</script>
+    <div class="container reveal">
+        <h1>Multidisciplinary Designer</h1>
+        <p>Crafting brand, motion, 3D, and digital experiences with clarity and restraint. Premium visuals, calm execution, timeless design.</p>
+        
+        <div class="buttons">
+            <a href="logos.html" class="button">View Logos</a>
+            <a href="social.html" class="button">View Social</a>
+            <a href="3d.html" class="button">View 3D & Packaging</a>
+            <a href="marketing.html" class="button">View Marketing</a>
+            <a href="photography.html" class="button">View Photography</a>
+            <a href="web.html" class="button">View Web Design</a>
+        </div>
+    </div>
 
-<script src="js/webgl-bg.js"></script>
-
-<nav>
-  <strong>Vivash Singh</strong>
-  <div>
-    <a href="logos.html">Logos</a>
-    <a href="social.html">Social</a>
-    <a href="3d.html">3D</a>
-    <a href="marketing.html">Marketing</a>
-    <a href="photography.html">Photography</a>
-    <a href="web.html">Web</a>
-  </div>
-</nav>
-
-<div class="container reveal">
-<h1>Multidisciplinary designer crafting brand, motion, 3D, and digital experiences with clarity and restraint.</h1>
-<p>Premium visuals. Calm execution. Timeless design.</p>
-
-<div class="buttons">
-  <a class="button" href="logos.html">View Logos</a>
-  <a class="button" href="social.html">View Social</a>
-  <a class="button" href="3d.html">View 3D & Packaging</a>
-  <a class="button" href="marketing.html">View Marketing</a>
-  <a class="button" href="photography.html">View Photography</a>
-  <a class="button" href="web.html">View Web</a>
-</div>
-</div>
-
-<script src="js/modal.js"></script>
-<script src="js/cursor.js"></script>
-<script src="js/reveal.js"></script>
-
-<script>
-  // Final check
-  window.addEventListener('load', function() {
-    console.log('Page fully loaded');
-    const debug = document.getElementById('debug');
-    debug.textContent += ' | Fully loaded';
-    debug.style.background = 'green';
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-      debug.style.display = 'none';
-    }, 3000);
-  });
-</script>
+    <script src="js/cursor.js"></script>
+    <script src="js/reveal.js"></script>
 </body>
 </html>

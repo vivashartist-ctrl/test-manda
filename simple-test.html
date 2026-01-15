@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Test</title>
+    <style>
+        * { margin: 0; padding: 0; }
+        body { 
+            background: red; /* Make it obvious */
+            color: white;
+            font-family: Arial;
+            padding: 20px;
+        }
+        h1 { color: yellow; }
+        .box {
+            background: blue;
+            padding: 20px;
+            margin: 10px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>CAN YOU SEE THIS?</h1>
+    
+    <div class="box">
+        <h2>If you can see this, the HTML is working</h2>
+        <p>The background should be RED and this box should be BLUE.</p>
+    </div>
+    
+    <div class="box" style="background: green;">
+        <h2>File Check:</h2>
+        <div id="fileCheck"></div>
+    </div>
+    
+    <script>
+        console.log("Test page loaded!");
+        alert("Test page loaded! Check if you see colors.");
+        
+        // Check if files exist
+        const files = ['css/style.css', 'js/webgl-bg.js'];
+        const results = document.getElementById('fileCheck');
+        
+        files.forEach(file => {
+            fetch(file)
+                .then(response => {
+                    if (response.ok) {
+                        results.innerHTML += `<p>✓ ${file} - FOUND</p>`;
+                    } else {
+                        results.innerHTML += `<p style="color:red">✗ ${file} - NOT FOUND (${response.status})</p>`;
+                    }
+                })
+                .catch(error => {
+                    results.innerHTML += `<p style="color:red">✗ ${file} - ERROR: ${error.message}</p>`;
+                });
+        });
+    </script>
+</body>
+</html>
