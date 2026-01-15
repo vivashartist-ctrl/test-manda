@@ -1,3 +1,5 @@
+[file name]: webgl-bg.js
+[file content begin]
 const canvas = document.createElement("canvas");
 canvas.id = "bg";
 document.body.prepend(canvas);
@@ -5,59 +7,152 @@ canvas.style.position = "fixed";
 canvas.style.inset = "0";
 canvas.style.zIndex = "-3";
 
-let gl = canvas.getContext("webgl");
+// Try to get WebGL context with fallback
+let gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
 if (!gl) {
-  console.warn("WebGL not supported, using fallback.");
-  const script = document.createElement("script");
-  script.src = "js/background.js";
-  document.body.appendChild(script);
+  console.warn("WebGL not supported, using fallback background.");
+  canvas.remove();
+  // Apply a simple CSS gradient as fallback
+  document.body.style.background = "linear-gradient(135deg, #0A0A0A 0%, #1A1A2E 50%, #16213E 100%)";
   return;
 }
 
 let w, h;
-function resize(){ w=canvas.width=window.innerWidth; h=canvas.height=window.innerHeight; }
+function resize(){ 
+  w = canvas.width = window.innerWidth; 
+  h = canvas.height = window.innerHeight; 
+}
 window.addEventListener("resize", resize);
 resize();
 
-const vertex = `attribute vec2 position; void main(){ gl_Position = vec4(position,0,1); }`;
-const fragment = `
-precision mediump float;
-uniform float time;
-uniform vec2 resolution;
-float noise(vec2 p){ return sin(p.x*12.9898+p.y*78.233)*43758.5453 - floor(sin(p.x*12.9898+p.y*78.233)*43758.5453); }
-void main(){ vec2 uv=gl_FragCoord.xy/resolution.xy; vec3 col=vec3(0.05,0.05,0.05); float n=noise(uv*10.0+time*0.1); col+=vec3(0.1,0.06,0.14)*n; col+=vec3(0.05,0.1,0.2)*sin(time+uv.x*5.0); gl_FragColor=vec4(col,1.0); }
+// Simplified vertex shader
+const vertexShaderSource = `
+  attribute vec2 aPosition;
+  void main() {
+    gl_Position = vec4(aPosition, 0.0, 1.0);
+  }
 `;
 
-function createShader(gl,type,source){
-  const s=gl.createShader(type); gl.shaderSource(s,source); gl.compileShader(s);
-  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){ console.error(gl.getShaderInfoLog(s)); return null; }
-  return s;
+// Simplified fragment shader (removed problematic noise function)
+const fragmentShaderSource = `
+  precision mediump float;
+  uniform float uTime;
+  uniform vec2 uResolution;
+  
+  void main() {
+    vec2 uv = gl_FragCoord.xy / uResolution.xy;
+    
+    // Create a subtle animated gradient
+    float time = uTime * 0.5;
+    vec3 color1 = vec3(0.05, 0.05, 0.1);
+    vec3 color2 = vec3(0.1, 0.05, 0.15);
+    vec3 color3 = vec3(0.05, 0.1, 0.15);
+    
+    // Animated gradient
+    float gradient = sin(uv.x * 3.0 + time) * 0.5 + 0.5;
+    vec3 baseColor = mix(color1, color2, gradient);
+    
+    // Add some subtle movement
+    float pulse = sin(uv.y * 2.0 + time * 1.5) * 0.02;
+    baseColor += vec3(pulse * 0.5, pulse, pulse * 0.8);
+    
+    // Add some subtle dots/particles
+    float particles = sin(uv.x * 20.0 + time * 2.0) * sin(uv.y * 15.0 + time * 1.7) * 0.02;
+    baseColor += vec3(particles * 0.3, particles * 0.2, particles * 0.4);
+    
+    gl_FragColor = vec4(baseColor, 1.0);
+  }
+`;
+
+function createShader(gl, type, source) {
+  const shader = gl.createShader(type);
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    console.error('Shader compilation error:', gl.getShaderInfoLog(shader));
+    gl.deleteShader(shader);
+    return null;
+  }
+  
+  return shader;
 }
 
-let program = gl.createProgram();
-let vShader = createShader(gl, gl.VERTEX_SHADER, vertex);
-let fShader = createShader(gl, gl.FRAGMENT_SHADER, fragment);
-gl.attachShader(program,vShader);
-gl.attachShader(program,fShader);
+// Create shader program
+const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+if (!vertexShader || !fragmentShader) {
+  console.error("Failed to create shaders");
+  canvas.remove();
+  document.body.style.background = "linear-gradient(135deg, #0A0A0A 0%, #1A1A2E 100%)";
+  return;
+}
+
+const program = gl.createProgram();
+gl.attachShader(program, vertexShader);
+gl.attachShader(program, fragmentShader);
 gl.linkProgram(program);
+
+if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+  console.error('Program linking error:', gl.getProgramInfoLog(program));
+  canvas.remove();
+  document.body.style.background = "linear-gradient(135deg, #0A0A0A 0%, #1A1A2E 100%)";
+  return;
+}
+
 gl.useProgram(program);
 
-let position = gl.getAttribLocation(program,"position");
-let buffer = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
-gl.enableVertexAttribArray(position);
-gl.vertexAttribPointer(position,2,gl.FLOAT,false,0,0);
+// Create geometry (full-screen quad)
+const vertices = new Float32Array([
+  -1.0, -1.0,
+   1.0, -1.0,
+  -1.0,  1.0,
+   1.0,  1.0
+]);
 
-const timeLoc = gl.getUniformLocation(program,"time");
-const resolutionLoc = gl.getUniformLocation(program,"resolution");
+const vertexBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
-let start = Date.now();
-function render(){
-  gl.viewport(0,0,w,h);
-  gl.uniform1f(timeLoc,(Date.now()-start)/1000);
-  gl.uniform2f(resolutionLoc,w,h);
-  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
-  requestAnimationFrame(render);
+const positionAttribLocation = gl.getAttribLocation(program, "aPosition");
+gl.enableVertexAttribArray(positionAttribLocation);
+gl.vertexAttribPointer(positionAttribLocation, 2, gl.FLOAT, false, 0, 0);
+
+// Get uniform locations
+const timeUniformLocation = gl.getUniformLocation(program, "uTime");
+const resolutionUniformLocation = gl.getUniformLocation(program, "uResolution");
+
+let startTime = Date.now();
+let animationId;
+
+function render() {
+  if (!gl) return;
+  
+  gl.viewport(0, 0, w, h);
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  
+  const currentTime = (Date.now() - startTime) / 1000;
+  
+  gl.uniform1f(timeUniformLocation, currentTime);
+  gl.uniform2f(resolutionUniformLocation, w, h);
+  
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  
+  animationId = requestAnimationFrame(render);
 }
+
+// Start animation
 render();
+
+// Clean up on page unload
+window.addEventListener('beforeunload', () => {
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+  }
+  if (gl) {
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
+  }
+});
+[file content end]
